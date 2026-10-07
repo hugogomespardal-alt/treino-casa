@@ -1,0 +1,453 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Treino em Casa ASV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one narrow phone-first column; sticky week bar; session = numbered checklist grouped in 5 parts */
+:root{
+  --bg:#F3F6F4; --surface:#FFFFFF; --fg:#16211B; --muted:#5A6B61; --line:#D7E0DA;
+  --green:#006B3C; --green-ink:#FFFFFF; --green-soft:#E1EFE7; --gold:#C8A23A; --gold-soft:#FBF3DC;
+  --warn:#B42318; --warn-soft:#FBE6E4; --done:#7C8C83;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1512; --surface:#16201B; --fg:#E6EEE9; --muted:#9DB0A5; --line:#2A3832;
+  --green:#2FA36A; --green-ink:#06130C; --green-soft:#183427; --gold:#D9B755; --gold-soft:#2E2814;
+  --warn:#F2877D; --warn-soft:#3A1C19; --done:#6E7F76; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1512; --surface:#16201B; --fg:#E6EEE9; --muted:#9DB0A5; --line:#2A3832;
+  --green:#2FA36A; --green-ink:#06130C; --green-soft:#183427; --gold:#D9B755; --gold-soft:#2E2814;
+  --warn:#F2877D; --warn-soft:#3A1C19; --done:#6E7F76; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;margin:0}
+.wrap{max-width:680px;margin:0 auto;padding-inline:16px;padding-block:0 48px}
+h1,h2,h3{font-family:var(--display);line-height:1.05;text-wrap:balance;margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+/* header */
+.top{background:var(--green);color:var(--green-ink);padding-block:22px 18px}
+.top .wrap{padding-block:0}
+.eyebrow{font-family:var(--display);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:13px;opacity:.85}
+.top h1{font-size:40px;font-weight:800;letter-spacing:.01em;margin-top:2px}
+.top p{margin:6px 0 0;font-size:15px;opacity:.92;max-width:52ch}
+
+/* tabs */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto;padding-block:8px;scrollbar-width:none}
+.tab{flex:0 0 auto;border:0;background:transparent;padding:8px 12px;border-radius:999px;font-weight:600;font-size:15px;color:var(--muted);cursor:pointer}
+.tab[aria-selected="true"]{background:var(--green);color:var(--green-ink)}
+
+section.view{padding-top:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.stack{display:flex;flex-direction:column;gap:14px}
+
+/* week picker */
+.picker{display:flex;align-items:center;gap:8px}
+.picker button.nav{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:22px;cursor:pointer;flex:0 0 auto}
+.picker button.nav:disabled{opacity:.35;cursor:default}
+.picker select{flex:1;min-width:0;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:600 15px var(--body);padding:0 10px}
+
+.weekhead h2{font-size:34px;font-weight:800}
+.weekhead .date{font-family:var(--display);font-weight:700;font-size:18px;color:var(--green);letter-spacing:.04em;text-transform:uppercase}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--green-soft);color:var(--fg)}
+.chip.gold{background:var(--gold-soft)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.goal{margin:10px 0 0;color:var(--fg)}
+.note{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--gold-soft);font-size:15px}
+
+/* progress */
+.progress{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{flex:1;height:8px;border-radius:999px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--green);transition:width .25s}
+
+/* parts + exercises */
+.part{margin-top:6px}
+.part-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 2px 6px}
+.part-h h3{font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.part-h span{font-size:13px;color:var(--muted);text-align:right}
+.ex{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;overflow:hidden}
+.ex-row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px}
+.check{width:30px;height:30px;border-radius:8px;border:2px solid var(--green);background:transparent;cursor:pointer;display:grid;place-items:center;font-weight:800;color:var(--green-ink)}
+.ex.done .check{background:var(--green)}
+.ex.done .ex-name,.ex.done .dose{color:var(--done);text-decoration:line-through}
+.ex-name{font-weight:700;font-size:16px;line-height:1.25;min-width:0}
+.dose{font-family:var(--display);font-weight:700;font-size:19px;color:var(--green);text-align:right;white-space:nowrap}
+.dose small{display:block;font-family:var(--body);font-weight:500;font-size:13px;color:var(--muted);white-space:normal;max-width:150px;margin-left:auto;line-height:1.25}
+details.how{border-top:1px solid var(--line)}
+details.how summary{list-style:none;cursor:pointer;padding:9px 12px;font-size:14px;font-weight:600;color:var(--green)}
+details.how summary::-webkit-details-marker{display:none}
+details.how summary::before{content:"+ "}
+details.how[open] summary::before{content:"– "}
+.how-body{padding:0 14px 14px;font-size:15px}
+.how-body .why{color:var(--muted);margin:0 0 8px}
+.how-body ol{margin:0 0 10px;padding-left:20px}
+.how-body li{margin-bottom:4px}
+.tag{display:inline-block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-right:6px}
+.tag.no{color:var(--warn)} .tag.easy{color:var(--green)}
+.how-body p{margin:4px 0}
+
+/* finish */
+.finish h3{font-size:24px;font-weight:800;text-transform:uppercase}
+.field{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.field label{font-weight:600}
+.scale{display:grid;grid-template-columns:repeat(11,1fr);gap:4px}
+.scale button{height:38px;border-radius:8px;border:1px solid var(--line);background:var(--bg);font-weight:700;cursor:pointer;font-variant-numeric:tabular-nums;font-size:14px;padding:0}
+.scale button[aria-pressed="true"]{background:var(--green);color:var(--green-ink);border-color:var(--green)}
+.scale.pain button[aria-pressed="true"]{background:var(--warn);border-color:var(--warn);color:#fff}
+.hint{font-size:13px;color:var(--muted)}
+input[type=text]{height:42px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font:15px var(--body);padding:0 10px;width:100%}
+.msg{margin-top:12px;padding:12px;border-radius:10px;background:var(--bg);border:1px dashed var(--line);font-size:15px;white-space:pre-wrap;user-select:all}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 18px;border-radius:12px;border:0;background:var(--green);color:var(--green-ink);font-weight:700;font-size:16px;cursor:pointer;margin-top:10px;width:100%}
+.alert{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--warn-soft);color:var(--warn);font-weight:600;font-size:15px}
+
+/* reference views */
+.ref h2{font-size:30px;font-weight:800;margin-bottom:6px}
+.ref h3{font-size:21px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin:18px 0 8px}
+.ref p{margin:0 0 10px;max-width:62ch}
+.ref ul{margin:0 0 10px;padding-left:20px} .ref li{margin-bottom:6px}
+.rules{counter-reset:r;list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.rules li{counter-increment:r;display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0}
+.rules li::before{content:counter(r);font-family:var(--display);font-weight:800;font-size:26px;color:var(--green);line-height:1}
+.glossary{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.glossary dt{font-family:var(--display);font-weight:800;font-size:18px;color:var(--green);white-space:nowrap}
+.glossary dd{margin:0;min-width:0}
+.stop{background:var(--warn-soft);border-radius:12px;padding:12px 14px}
+.stop strong{color:var(--warn)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-family:var(--display);font-weight:700;font-size:15px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+.search{height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:15px var(--body);padding:0 12px;width:100%;margin-bottom:12px}
+footer{margin-top:28px;font-size:13px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow">Academia Sporting Viseu · Sub-15 / Sub-16</div>
+    <h1>Treino em Casa</h1>
+    <p>A sessão de quarta-feira para quem não pode ir à CrossFit Viseu. Mesmo objetivo do treino da box, só com material que tens em casa.</p>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Secções">
+  <div class="wrap" role="tablist">
+    <button class="tab" role="tab" data-view="treino" aria-selected="true" id="tab-treino">Treino da semana</button>
+    <button class="tab" role="tab" data-view="comecar" aria-selected="false" id="tab-comecar">Antes de começar</button>
+    <button class="tab" role="tab" data-view="rotina" aria-selected="false" id="tab-rotina">Rotina ASV</button>
+    <button class="tab" role="tab" data-view="exercicios" aria-selected="false" id="tab-exercicios">Exercícios</button>
+  </div>
+</nav>
+
+<main class="wrap">
+  <!-- TREINO -->
+  <section class="view stack" id="view-treino">
+    <div class="picker">
+      <button class="nav" id="prev" aria-label="Semana anterior">‹</button>
+      <select id="weekSel" aria-label="Escolher semana"></select>
+      <button class="nav" id="next" aria-label="Semana seguinte">›</button>
+    </div>
+    <div class="card weekhead" id="weekHead"></div>
+    <div class="progress"><span id="progTxt">0 de 0 feitos</span><div class="bar"><i id="progBar"></i></div></div>
+    <div id="session"></div>
+    <div class="card finish" id="finish">
+      <h3>No fim do treino</h3>
+      <p class="hint" style="margin:4px 0 0">Responde e envia a mensagem ao treinador (WhatsApp). Demora 20 segundos.</p>
+      <div class="field">
+        <label id="lblEff">Quão duro foi o treino? (0 = nada · 10 = máximo)</label>
+        <div class="scale" id="effScale" role="group" aria-labelledby="lblEff"></div>
+      </div>
+      <div class="field">
+        <label id="lblPain">Dor durante ou depois? (0 = nenhuma · 10 = muita)</label>
+        <div class="scale pain" id="painScale" role="group" aria-labelledby="lblPain"></div>
+        <div class="alert" id="painAlert" hidden>Dor acima de 3: não voltes a fazer o exercício que doeu e avisa já o treinador. Diz onde dói.</div>
+      </div>
+      <div class="field">
+        <label for="painWhere">Onde? / Notas (opcional)</label>
+        <input type="text" id="painWhere" placeholder="ex.: atrás da coxa direita; o Copenhagen custou">
+      </div>
+      <div class="msg" id="msg"></div>
+      <button class="btn" id="copyBtn">Copiar mensagem</button>
+      <p class="hint" id="copyOk" style="margin:6px 0 0;text-align:center" hidden></p>
+    </div>
+  </section>
+
+  <!-- ANTES DE COMEÇAR -->
+  <section class="view ref" id="view-comecar" hidden>
+    <h2>Antes de começar</h2>
+    <p>Lê isto uma vez com calma. Depois, cada quarta-feira só precisas de abrir o <strong>Treino da semana</strong> e seguir a lista de cima para baixo.</p>
+
+    <h3>O que precisas</h3>
+    <ul>
+      <li><strong>Mochila carregada:</strong> o garrafão de 5 L lá dentro (5 kg) + livros. Pesa-a na balança. Out–nov: 5–8 kg. A partir de dezembro: 8–12 kg (os mais pesados podem pôr um pouco mais, desde que façam o exercício bem).</li>
+      <li><strong>Cadeira:</strong> firme, sem rodas, <strong>sempre encostada à parede</strong>.</li>
+      <li><strong>Degrau:</strong> o 1.º degrau da escada (máx. 20 cm) e um corrimão ou parede para apoiar a mão.</li>
+      <li><strong>Toalha</strong> e um chão liso (madeira, mosaico). Em alcatifa usa meias.</li>
+      <li><strong>Sapatilhas</strong> e 3–4 metros livres para os saltos. Nunca saltes de meias.</li>
+      <li><strong>Tempo:</strong> 35–45 minutos (semanas leves: 25 min). Faz à quarta-feira, como os colegas na box.</li>
+    </ul>
+
+    <h3>Como ler o plano</h3>
+    <dl class="glossary">
+      <dt>3 × 8</dt><dd>3 séries de 8 repetições. Descansa entre séries o tempo indicado em cada parte.</dd>
+      <dt>/lado</dt><dd>As repetições são para cada perna (ou braço). 8/lado = 8 com a direita + 8 com a esquerda.</dd>
+      <dt>2+2</dt><dd>2 séries do 1.º exercício + 2 séries do 2.º (usado no gémeo + sóleo).</dd>
+      <dt>4-1-1</dt><dd>Ritmo: 4 s a descer, 1 s parado em baixo, 1 s a subir.</dd>
+      <dt>3 s</dt><dd>“3 s a descer”: conta 3 segundos na descida.</dd>
+      <dt>fixar</dt><dd>Depois de aterrar, ficas parado 2 segundos, sem mexer os pés.</dd>
+      <dt>→ 60 s →</dt><dd>Faz o exercício, descansa 60 s e faz logo o exercício seguinte (força e depois salto máximo).</dd>
+      <dt>15 s</dt><dd>Segurar a posição 15 segundos (isométrico).</dd>
+    </dl>
+
+    <h3>Qual o esforço certo?</h3>
+    <p>Nos exercícios de força, cada série deve acabar quando <strong>ainda conseguias fazer mais 2 ou 3 repetições bem feitas</strong>. Nunca vamos até não conseguir mais. Se fizeste as repetições todas e ainda te sobravam 5 ou mais, põe mais peso na mochila na semana seguinte. Se não conseguiste fazer as repetições bem, tira peso.</p>
+    <p>Nos saltos, conta a <strong>qualidade</strong>: cada salto com intenção máxima e cada aterragem silenciosa. Quando a aterragem piora, a série acabou.</p>
+
+    <h3>5 regras</h3>
+    <ol class="rules">
+      <li>Começa sempre pela Rotina ASV (aquecimento).</li>
+      <li>Segue a ordem da lista: saltos primeiro (estás fresco), força depois.</li>
+      <li>Joelho sempre na direção do pé. Se fugir para dentro, faz a versão mais fácil.</li>
+      <li>Se não tens a certeza de como se faz, abre “Como fazer” ou escolhe a versão mais fácil.</li>
+      <li>No fim, envia a mensagem ao treinador. Uma vez por mês, envia também um vídeo de 10 s do Bulgarian, do Copenhagen e de um salto.</li>
+    </ol>
+
+    <h3>Quando parar</h3>
+    <div class="stop">
+      <p><strong>Para o exercício e avisa o treinador se:</strong></p>
+      <ul style="margin:0">
+        <li>a dor for maior que 3 em 10 (uma dor que te faz mudar o movimento);</li>
+        <li>sentires dor no joelho (abaixo da rótula) ou no calcanhar ao saltar;</li>
+        <li>sentires uma “picada” atrás da coxa ou na virilha.</li>
+      </ul>
+      <p style="margin-top:8px">Cansaço e “ardor” nos músculos são normais. Dor numa articulação ou dor aguda não são.</p>
+    </div>
+    <p style="margin-top:12px">Se estiveres com muito sono ou muito cansado de um jogo, faz o treino na mesma mas com <strong>1 série a menos</strong> em cada exercício de força.</p>
+  </section>
+
+  <!-- ROTINA -->
+  <section class="view ref" id="view-rotina" hidden>
+    <h2>Rotina ASV</h2>
+    <p>Cinco exercícios, cerca de 7 minutos. É o teu aquecimento em casa e deve ser feito também <strong>antes de todos os treinos de futebol</strong> e antes dos jogos. O nível de cada semana aparece no Treino da semana.</p>
+    <div id="rotinaList"></div>
+    <h3>Extra: rotina de estabilidade</h3>
+    <p>Duas vezes por semana, noutro dia (ex.: segunda e sexta), 6 minutos:</p>
+    <ul>
+      <li><strong>Dead bug</strong> 2 × 6/lado: deitado de costas, braços e pernas no ar; estende braço e perna opostos sem descolar a lombar do chão.</li>
+      <li><strong>Prancha lateral</strong> 2 × 20–30 s/lado: cotovelo por baixo do ombro, anca alta.</li>
+      <li><strong>Equilíbrio numa perna</strong> 2 × 20 s/lado: a partir de dezembro, de olhos fechados.</li>
+      <li><strong>Tibial na parede</strong> 2 × 15: costas na parede, pés um pouco à frente, levanta as pontas dos pés.</li>
+    </ul>
+  </section>
+
+  <!-- EXERCÍCIOS -->
+  <section class="view ref" id="view-exercicios" hidden>
+    <h2>Exercícios</h2>
+    <p>Todos os exercícios do plano, com explicação e a versão mais fácil.</p>
+    <input class="search" id="search" type="search" placeholder="Procurar exercício (ex.: Copenhagen)" aria-label="Procurar exercício">
+    <div id="allEx"></div>
+  </section>
+
+  <footer>Academia Sporting Viseu · Departamento de Performance · Época 2026/27<br>Dúvidas? Fala com o teu treinador.</footer>
+</main>
+
+<script>
+const WEEKS = [{"n":1,"date":"07/10/2026","m":1,"tipo":"Avaliação T1 + ensino","srpe":"4","note":"Quem não foi à box faz os testes na sessão seguinte.","rows":[["0","H_ROT","1","Nível 1"],["P1","H_SNAP","2","3"],["A1","H_GSQ","2","8 · 4-1-1"],["A2","H_RDL","2","8 · 3 s a descer"],["B1","H_SS","2","6/lado"],["B2","H_CURL","2","3 (bilateral)"],["B3","H_COP","2","10 s/lado (joelho na cadeira)"],["C2","H_CALF","1+1","10 + 10/lado"],["C3","H_PLT","2","6/lado"]]},{"n":2,"date":"14/10/2026","m":1,"tipo":"Progressão","srpe":"4–5","note":"","rows":[["0","H_ROT","1","Nível 1"],["P1","H_SNAP","3","3"],["P2","H_LHOP","3","2/lado"],["P3","H_WALL","3","10 s/lado (posição A)"],["A1","H_GSQ","3","10 · 4-1-1"],["A2","H_RDL","3","10 · 3 s a descer"],["A3","H_ROW","2","10/lado"],["B1","H_SS","2","8/lado · 3-1-1"],["B2","H_CURL","2","3 (bilateral)"],["B3","H_COP","2","15 s/lado (curta)"],["C1","H_SLRDL","2","6/lado (sem carga)"],["C2","H_CALF","2+2","12 + 12/lado"],["C3","H_PU","2","5–8"]]},{"n":3,"date":"21/10/2026","m":1,"tipo":"Progressão","srpe":"5","note":"","rows":[["0","H_ROT","1","Nível 1"],["P1","H_SQJ","3","3"],["P2","H_LHOP","3","3/lado"],["P3","H_DEC","2","3/lado (split stick)"],["A1","H_GSQ","3","12 · 4-1-1"],["A2","H_RDL","3","10 · 3 s"],["A3","H_ROW","3","10/lado"],["B1","H_SS","3","8/lado · mochila leve"],["B2","H_CURL","2","4 (bilateral)"],["B3","H_COP","2","20 s/lado (curta)"],["C1","H_SLRDL","2","8/lado"],["C2","H_CALF","2+2","10 + 12/lado"],["C3","H_PU","3","5–8"]]},{"n":4,"date":"28/10/2026","m":1,"tipo":"Progressão","srpe":"5","note":"","rows":[["0","H_ROT","1","Nível 1"],["P1","H_CMJ","3","3"],["P2","H_SNAP1","2","3/lado"],["P3","H_WALL","3","6/lado (march)"],["A1","H_BSS","2","6/lado · sem carga (ensino)"],["A2","H_RDL","3","10 · 3 s"],["A3","H_ROW","3","10/lado"],["B1","H_SS","3","8/lado · mochila"],["B2","H_CURL","2","4 (bilateral)"],["B3","H_COP","2","5/lado (curta dinâmica)"],["C1","H_SLRDL","3","6/lado · mochila"],["C2","H_CALF","2+2","10 + 12/lado · mochila"],["C3","H_PU","3","6–10"]]},{"n":5,"date":"04/11/2026","m":2,"tipo":"Progressão","srpe":"5–6","note":"","rows":[["0","H_ROT","1","Nível 1"],["P1","H_CMJ","3","3"],["P2","H_BJ","3","3"],["P3","H_WALL","3","6/lado (march)"],["A1","H_BSS","3","8/lado · 3 s a descer · mochila leve"],["A2","H_ROW","3","10/lado"],["A3","H_PU","3","8"],["B1","H_SLSQ","2","5/lado (cadeira alta)"],["B2","H_CURL","3","4 (sobe 2 / desce 1 perna)"],["B3","H_COP","2","6/lado (curta dinâmica)"],["C1","H_SLRDL","3","6/lado · mochila"],["C2","H_CALF","3+2","10 + 12/lado · mochila"],["C3","H_PLT","2","8/lado"]]},{"n":6,"date":"11/11/2026","m":2,"tipo":"Progressão","srpe":"6","note":"","rows":[["0","H_ROT","1","Nível 1"],["P1","H_CMJ","4","3"],["P2","H_SKS","3","3/lado"],["P3","H_DEC","4","1 (3 passos + travar)"],["A1","H_BSS","3","8/lado · mochila"],["A2","H_ROW","3","12/lado"],["A3","H_PU","3","10"],["B1","H_SLSQ","3","5/lado"],["B2","H_CURL","3","4 (sobe 2 / desce 1)"],["B3","H_COP","3","6/lado (curta dinâmica)"],["C1","H_SLRDL","3","6/lado · mochila"],["C2","H_CALF","3+2","10 + 12/lado · mochila"],["C3","H_SUIT","3","30 s/lado"]]},{"n":7,"date":"18/11/2026","m":2,"tipo":"Progressão","srpe":"6","note":"","rows":[["0","H_ROT","1","Nível 1"],["P1","H_CMJ","4","3"],["P2","H_BJ","4","3"],["P3","H_WALL","3","5/lado (single exchange)"],["A1","H_BSS","3","6/lado · mochila · pausa 1 s"],["A2","H_ROW","4","10/lado"],["A3","H_PU","3","6 · pausa 2 s"],["B1","H_SLSQ","3","6/lado"],["B2","H_CURL","3","5 (sobe 2 / desce 1)"],["B3","H_COP","2","15 s/lado (longa — pé na cadeira)"],["C1","H_SLRDL","3","6/lado · 3 s a descer"],["C2","H_CALF","3+3","10 + 12/lado · mochila"],["C3","H_PLT","2","10/lado"]]},{"n":8,"date":"25/11/2026","m":2,"tipo":"Pico do bloco","srpe":"6–7","note":"","rows":[["0","H_ROT","1","Nível 1"],["P1","H_CMJ","4","3"],["P2","H_SKS","3","3/lado"],["P3","H_DEC","6","1 (3 passos + travar)"],["A1","H_BSS","4","6/lado · mochila"],["A2","H_ROW","4","10/lado"],["A3","H_PU","3","8 · pausa 2 s"],["B1","H_SLSQ","3","6/lado"],["B2","H_CURL","3","5 (sobe 2 / desce 1)"],["B3","H_COP","3","15 s/lado (longa)"],["C1","H_SLRDL","3","6/lado · 3 s"],["C2","H_CALF","3+3","10 + 12/lado · mochila"],["C3","H_SUIT","3","40 s/lado"]]},{"n":9,"date":"02/12/2026","m":2,"tipo":"Descarga","srpe":"4","note":"","rows":[["0","H_ROT","1","Nível 1"],["P1","H_CMJ","2","3"],["P2","H_BJ","2","3"],["P3","H_WALL","2","6/lado (march)"],["A1","H_BSS","2","6/lado · mochila"],["A2","H_ROW","2","10/lado"],["A3","H_PU","3","8"],["B1","H_SLSQ","2","5/lado"],["B2","H_CURL","2","3 (sobe 2 / desce 1)"],["B3","H_COP","2","6/lado (curta dinâmica)"],["C1","H_SLRDL","2","6/lado"],["C2","H_CALF","2+2","10 + 12/lado"],["C3","H_PLT","2","8/lado"]]},{"n":10,"date":"09/12/2026","m":3,"tipo":"Progressão","srpe":"6","note":"","rows":[["0","H_ROT","1","Nível 2"],["P1","H_STDL","3","3"],["P2","H_SLHS","3","3/lado"],["P3","H_DEC","6","1 (alternar frente/lado)"],["A1","H_BSS","3","6/lado · mochila 8–12 kg · 3 s"],["A2","H_ROW","4","10/lado"],["A3","H_PU","3","8 · pés na cadeira"],["B1","H_SLSQ","3","6/lado · cadeira mais baixa"],["B2","H_CURL","3","5 (sobe 2 / desce 1)"],["B3","H_COP","3","15 s/lado (longa)"],["C1","H_SLRDL","3","6/lado · mochila"],["C2","H_CALF","3+3","10 + 12/lado · mochila"],["C3","H_SUIT","3","40 s/lado"]]},{"n":11,"date":"16/12/2026","m":3,"tipo":"Pico do bloco","srpe":"6–7","note":"","rows":[["0","H_ROT","1","Nível 2"],["P1","H_SNAP1","3","3/lado"],["P2","H_SKS","3","3/lado"],["P3","H_DEC","6","1"],["A1","H_BSS","3","6/lado · mochila · pausa 1 s"],["A2","H_ROW","4","10/lado"],["A3","H_PU","3","8 · pés na cadeira"],["B1","H_SLSQ","3","6/lado"],["B2","H_CURL","3","3/lado (unilateral)"],["B3","H_COP","2","5/lado (longa dinâmica)"],["C1","H_SLRDL","3","6/lado · 3 s"],["C2","H_CALF","3+3","10 + 12/lado · mochila"],["C3","H_PLT","3","8/lado"]]},{"n":12,"date":"23/12/2026","m":3,"tipo":"Descarga (Natal)","srpe":"4","note":"","rows":[["0","H_ROT","1","Nível 2"],["P1","H_CMJ","2","3"],["P2","H_SKS","2","2/lado"],["A1","H_BSS","2","6/lado · mochila"],["A2","H_ROW","2","10/lado"],["B2","H_CURL","2","3/lado"],["B3","H_COP","2","15 s/lado (longa)"],["C1","H_SLRDL","2","6/lado"],["C2","H_CALF","2+2","10 + 12/lado"],["C3","H_PU","2","8"]]},{"n":13,"date":"30/12/2026","m":3,"tipo":"Dose mínima (Natal)","srpe":"3–4","note":"","rows":[["0","H_ROT","1","Nível 2"],["P1","H_SNAP","2","3"],["B1","H_SS","2","8/lado"],["B2","H_CURL","2","3/lado"],["B3","H_COP","2","15 s/lado (longa)"],["C1","H_SLRDL","2","6/lado"],["C2","H_CALF","2+2","12 + 12/lado"],["C3","H_PLT","2","8/lado"]]},{"n":14,"date":"06/01/2027","m":4,"tipo":"Reentrada","srpe":"5","note":"","rows":[["0","H_ROT","1","Nível 2"],["P1","H_CMJ","3","3"],["P2","H_BJ","3","3"],["P3","H_WALL","3","5/lado (single exchange)"],["A1","H_BSS","3","6/lado · mochila"],["A2","H_ROW","3","10/lado"],["A3","H_PU","3","8"],["B1","H_SLSQ","2","6/lado"],["B2","H_CURL","2","4 (sobe 2 / desce 1)"],["B3","H_COP","2","15 s/lado (longa)"],["C1","H_SLRDL","2","6/lado · mochila"],["C2","H_CALF","2+2","10 + 12/lado · mochila"],["C3","H_PLT","2","8/lado"]]},{"n":15,"date":"13/01/2027","m":4,"tipo":"Avaliação T2","srpe":"5","note":"Quem não foi à box faz os testes na sessão seguinte.","rows":[["0","H_ROT","1","Nível 2"],["P1","H_CMJ","3","3"],["A1","H_BSS","3","6/lado · mochila"],["A2","H_ROW","3","10/lado"],["B2","H_CURL","3","3/lado (unilateral)"],["B3","H_COP","2","5/lado (longa dinâmica)"],["C1","H_SLRDL","3","6/lado · mochila"],["C2","H_CALF","2+2","10 + 12/lado"],["C3","H_PU","3","8"]]},{"n":16,"date":"20/01/2027","m":4,"tipo":"Progressão","srpe":"6","note":"","rows":[["0","H_ROT","1","Nível 2"],["P1","H_CMJ","3","3"],["P2","H_BJ2","3","2 saltos"],["P3","H_WALL","4","5/lado (double exchange)"],["A1","H_BSS","4","6/lado · mochila · pausa 1 s"],["A2","H_ROW","4","10/lado · 2 s em cima"],["A3","H_PU","3","6 · pausa 2 s"],["B1","H_SLSQ","3","6/lado · cadeira baixa"],["B2","H_CURL","3","3/lado (unilateral)"],["B3","H_COP","3","5/lado (longa dinâmica)"],["C1","H_SLRDL","3","6/lado · 3 s"],["C2","H_CALF","3+3","10 + 12/lado · mochila"],["C3","H_SUIT","3","40 s/lado"]]},{"n":17,"date":"27/01/2027","m":4,"tipo":"Progressão","srpe":"6–7","note":"","rows":[["0","H_ROT","1","Nível 2"],["P1","H_CMJ2","3","2×2"],["P2","H_SKS","3","3/lado"],["P3","H_WALL","4","5/lado (double exchange)"],["A1","H_BSS","4","5/lado · mochila (máx. confortável) · pausa 1 s"],["A2","H_ROW","4","10/lado · 2 s em cima"],["A3","H_PU","3","8 · pés na cadeira"],["B1","H_SLSQ","3","6/lado · cadeira baixa"],["B2","H_CURL","3","4/lado (unilateral)"],["B3","H_COP","3","6/lado (longa dinâmica)"],["C1","H_SLRDL","3","6/lado · 3 s"],["C2","H_CALF","3+3","10 + 12/lado · mochila"],["C3","H_PLT","3","10/lado"]]},{"n":18,"date":"03/02/2027","m":4,"tipo":"Pico de força","srpe":"7","note":"","rows":[["0","H_ROT","1","Nível 2"],["P1","H_CMJ","3","3"],["P2","H_BJ2","3","2 saltos"],["P3","H_WALL","4","5/lado (double exchange)"],["A1","H_BSS","4","5/lado · mochila (máx.) · pausa 1 s"],["A2","H_ROW","4","10/lado · 2 s em cima"],["A3","H_PU","3","6 · pés na cadeira"],["B1","H_SLSQ","3","5/lado · cadeira baixa · 4 s a descer"],["B2","H_CURL","3","5/lado (unilateral)"],["B3","H_COP","3","6/lado (longa dinâmica)"],["C1","H_SLRDL","3","5/lado · mochila"],["C2","H_CALF","3+3","8 + 12/lado · mochila"],["C3","H_SUIT","3","45 s/lado"]]},{"n":19,"date":"10/02/2027","m":4,"tipo":"Descarga (Carnaval)","srpe":"4","note":"","rows":[["0","H_ROT","1","Nível 2"],["P1","H_CMJ","2","3"],["P2","H_SKS","2","2/lado"],["P3","H_WALL","2","5/lado"],["A1","H_BSS","2","5/lado · mochila"],["A2","H_ROW","2","10/lado"],["A3","H_PU","3","8"],["B1","H_SLSQ","2","5/lado"],["B2","H_CURL","2","3/lado"],["B3","H_COP","2","5/lado (longa dinâmica)"],["C1","H_SLRDL","2","5/lado"],["C2","H_CALF","2+2","10 + 12/lado"],["C3","H_PLT","2","8/lado"]]},{"n":20,"date":"17/02/2027","m":5,"tipo":"Progressão","srpe":"6","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_POGO","2","10"],["P2","H_SKC","3","3/lado"],["P3","H_WALL","4","5/lado (double exchange)"],["A1","H_BSS","3","5/lado · mochila (máx.) → 60 s →"],["A1b","H_SPLJ","3","3/lado (máx. intenção)"],["A2","H_RDL","3","8 · mochila · subida rápida → 60 s →"],["A2b","H_CMJ","3","3 (máx. intenção)"],["A3","H_PUE","3","5"],["A4","H_ROW","3","10/lado"],["B2","H_CURL","2","5/lado (unilateral)"],["B3","H_COP","2","6/lado (longa dinâmica)"],["C2","H_CALF","3+2","8 + 12/lado · mochila"],["C3","H_PLT","2","10/lado"]]},{"n":21,"date":"24/02/2027","m":5,"tipo":"Progressão","srpe":"6–7","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_POGO","3","10"],["P2","H_SKC","3","3/lado"],["P3","H_WALL","4","5/lado (double exchange)"],["A1","H_BSS","3","5/lado · mochila → 60 s →"],["A1b","H_SPLJ","3","3/lado"],["A2","H_RDL","4","8 · mochila · subida rápida → 60 s →"],["A2b","H_CMJ","4","2 (máx. intenção)"],["A3","H_PUE","3","5"],["A4","H_ROW","3","10/lado"],["B2","H_CURL","2","5/lado"],["B3","H_COP","3","6/lado (longa dinâmica)"],["C2","H_CALF","3+2","8 + 12/lado · mochila"],["C3","H_SUIT","3","45 s/lado"]]},{"n":22,"date":"03/03/2027","m":5,"tipo":"Progressão","srpe":"7","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_POGO","3","10"],["P2","H_SLHS","3","3/lado"],["P3","H_DEC","5","1 (arranque + travar)"],["A1","H_BSS","3","5/lado · mochila → 60 s →"],["A1b","H_SPLJ","3","3/lado"],["A2","H_RDL","4","8 · mochila · subida rápida → 60 s →"],["A2b","H_BJ","4","2 (máx. distância, fixar)"],["A3","H_PUE","3","5"],["A4","H_ROW","3","10/lado"],["B2","H_CURL","2","5/lado"],["B3","H_COP","3","6/lado (longa dinâmica)"],["C2","H_CALF","3+2","8 + 12/lado · mochila"],["C3","H_PLT","3","10/lado"]]},{"n":23,"date":"10/03/2027","m":5,"tipo":"Pico do bloco","srpe":"7","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_POGO","3","10"],["P2","H_SKC","3","4/lado"],["P3","H_WALL","4","5/lado (double exchange)"],["A1","H_BSS","3","4/lado · mochila (máx.) → 60 s →"],["A1b","H_SPLJ","3","3/lado"],["A2","H_RDL","4","6 · mochila · subida rápida → 60 s →"],["A2b","H_CMJ","4","2 (máx. intenção)"],["A3","H_PUE","3","5"],["A4","H_ROW","3","10/lado"],["B2","H_CURL","2","5/lado"],["B3","H_COP","3","6/lado (longa dinâmica)"],["C2","H_CALF","3+2","8 + 12/lado · mochila"],["C3","H_SUIT","3","45 s/lado"]]},{"n":24,"date":"17/03/2027","m":5,"tipo":"Avaliação T3","srpe":"5","note":"Quem não foi à box faz os testes na sessão seguinte.","rows":[["0","H_ROT","1","Nível 3"],["P1","H_CMJ","3","3"],["A1","H_BSS","3","5/lado · mochila"],["A2","H_ROW","3","10/lado"],["B2","H_CURL","2","5/lado"],["B3","H_COP","2","6/lado (longa dinâmica)"],["C1","H_SLRDL","3","6/lado · mochila"],["C2","H_CALF","2+2","10 + 12/lado"],["C3","H_PU","3","8"]]},{"n":25,"date":"24/03/2027","m":6,"tipo":"Progressão (Páscoa)","srpe":"6","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_STDJ","3","3"],["P2","H_SLH3","2","3/lado"],["P3","H_WALL","4","5/lado (double exchange)"],["A1","H_BSS","2","5/lado · mochila → 60 s →"],["A1b","H_SQJ","2","3 (máx. intenção)"],["A2","H_ROW","3","10/lado"],["A3","H_PUE","3","5"],["B1","H_LATL","3","6/lado"],["B2","H_CURL","2","4/lado"],["B3","H_COP","2","6/lado (longa dinâmica)"],["C2","H_CALF","2+2","8 + 12/lado · mochila"],["C3","H_PLT","2","10/lado"]]},{"n":26,"date":"31/03/2027","m":6,"tipo":"Descarga (Páscoa)","srpe":"4","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_CMJ","2","3"],["P2","H_SKS","2","2/lado"],["A1","H_BSS","2","5/lado · mochila"],["A2","H_ROW","2","10/lado"],["B1","H_LATL","2","6/lado"],["B2","H_CURL","2","3/lado"],["B3","H_COP","2","5/lado (longa dinâmica)"],["C2","H_CALF","2+2","10 + 12/lado"],["C3","H_PU","2","8"]]},{"n":27,"date":"07/04/2027","m":6,"tipo":"Progressão","srpe":"6","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_STDJ","3","3"],["P2","H_SKC","3","4/lado"],["P3","H_DEC","5","1 (arranque + travar)"],["A1","H_BSS","3","5/lado · mochila → 60 s →"],["A1b","H_SQJ","3","3 (máx. intenção)"],["A2","H_ROW","3","10/lado"],["A3","H_PUE","3","5"],["B1","H_LATL","3","6/lado · garrafão"],["B2","H_CURL","2","5/lado"],["B3","H_COP","3","6/lado (longa dinâmica)"],["C2","H_CALF","3+2","8 + 12/lado · mochila"],["C3","H_SUIT","3","45 s/lado"]]},{"n":28,"date":"14/04/2027","m":6,"tipo":"Progressão","srpe":"6–7","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_STDJ","3","4"],["P2","H_SLH3","3","3/lado"],["P3","H_WALL","4","5/lado (double exchange)"],["A1","H_BSS","3","5/lado · mochila → 60 s →"],["A1b","H_SQJ","3","3 (máx. intenção)"],["A2","H_ROW","3","10/lado"],["A3","H_PUE","3","6"],["B1","H_LATL","3","6/lado · garrafão"],["B2","H_CURL","2","5/lado"],["B3","H_COP","3","6/lado (longa + perna de baixo ativa)"],["C2","H_CALF","3+2","8 + 12/lado · mochila"],["C3","H_PLT","3","10/lado"]]},{"n":29,"date":"21/04/2027","m":6,"tipo":"Progressão","srpe":"7","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_POGO1","2","6/lado"],["P2","H_SKC","3","4/lado (45°)"],["P3","H_DEC","6","1 (arranque + travar)"],["A1","H_BSS","3","4/lado · mochila (máx.) → 60 s →"],["A1b","H_SQJ","3","3 (máx. intenção)"],["A2","H_ROW","3","10/lado"],["A3","H_PUE","3","6"],["B1","H_LATL","3","6/lado · garrafão"],["B2","H_CURL","2","5/lado"],["B3","H_COP","3","6/lado (C5)"],["C2","H_CALF","3+2","8 + 12/lado · mochila"],["C3","H_SUIT","3","45 s/lado"]]},{"n":30,"date":"28/04/2027","m":6,"tipo":"Pico reativo","srpe":"6–7","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_STDJ","3","4"],["P2","H_SLH3","3","3/lado"],["P3","H_WALL","4","5/lado (double exchange)"],["A1","H_BSS","2","5/lado · mochila → 60 s →"],["A1b","H_SQJ","2","3 (máx. intenção)"],["A2","H_ROW","3","10/lado"],["A3","H_PUE","3","5"],["B1","H_LATL","2","6/lado · garrafão"],["B2","H_CURL","2","5/lado"],["B3","H_COP","2","6/lado (C5)"],["C2","H_CALF","3+2","8 + 12/lado · mochila"],["C3","H_PLT","2","10/lado"]]},{"n":31,"date":"05/05/2027","m":7,"tipo":"Manutenção","srpe":"5–6","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_STDJ","2","3"],["P2","H_SKS","2","3/lado"],["P3","H_DEC","4","1 (arranque + travar)"],["A1","H_BSS","2","5/lado · mochila (máx.)"],["A2","H_ROW","2","10/lado"],["A3","H_PUE","2","5"],["B2","H_CURL","2","4/lado"],["B3","H_COP","2","6/lado (longa dinâmica)"],["C1","H_SLRDL","2","5/lado · mochila"],["C2","H_CALF","2+2","8 + 12/lado · mochila"],["C3","H_PLT","2","10/lado"]]},{"n":32,"date":"12/05/2027","m":7,"tipo":"Manutenção","srpe":"5–6","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_CMJ","2","3"],["P2","H_SLHS","2","3/lado"],["P3","H_WALL","3","5/lado (double exchange)"],["A1","H_BSS","2","5/lado · mochila (máx.)"],["A2","H_ROW","2","10/lado"],["A3","H_PU","2","8 · pés na cadeira"],["B2","H_CURL","2","4/lado"],["B3","H_COP","2","6/lado (longa dinâmica)"],["C1","H_SLRDL","2","5/lado · mochila"],["C2","H_CALF","2+2","8 + 12/lado · mochila"],["C3","H_SUIT","2","45 s/lado"]]},{"n":33,"date":"19/05/2027","m":7,"tipo":"Manutenção","srpe":"5–6","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_STDJ","2","3"],["P2","H_SKC","2","3/lado"],["P3","H_DEC","4","1 (arranque + travar)"],["A1","H_BSS","2","4/lado · mochila (máx.)"],["A2","H_ROW","2","10/lado"],["A3","H_PUE","2","5"],["B2","H_CURL","2","4/lado"],["B3","H_COP","2","6/lado (longa dinâmica)"],["C1","H_LATL","2","6/lado · garrafão"],["C2","H_CALF","2+2","8 + 12/lado · mochila"],["C3","H_PLT","2","10/lado"]]},{"n":34,"date":"26/05/2027","m":7,"tipo":"Descarga","srpe":"4","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_CMJ","2","3"],["P2","H_SKS","2","2/lado"],["A1","H_BSS","2","5/lado · mochila"],["A2","H_ROW","2","10/lado"],["B2","H_CURL","2","3/lado"],["B3","H_COP","2","5/lado (longa dinâmica)"],["C1","H_SLRDL","2","5/lado"],["C2","H_CALF","2+2","10 + 12/lado"],["C3","H_PU","2","8"]]},{"n":35,"date":"02/06/2027","m":8,"tipo":"Manutenção","srpe":"5–6","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_CMJ","3","3"],["P2","H_SKS","3","2/lado"],["P3","H_DEC","4","1 (arranque + travar)"],["A1","H_BSS","2","5/lado · mochila"],["A2","H_ROW","2","10/lado"],["A3","H_PUE","2","5"],["B2","H_CURL","2","4/lado"],["B3","H_COP","2","6/lado (longa dinâmica)"],["C1","H_SLRDL","2","6/lado · mochila"],["C2","H_CALF","2+2","8 + 12/lado · mochila"],["C3","H_SUIT","2","45 s/lado"]]},{"n":36,"date":"09/06/2027","m":8,"tipo":"Transição","srpe":"5","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_SNAP1","2","3/lado"],["P2","H_SKS","2","2/lado"],["P3","H_DEC","4","1"],["A1","H_BSS","2","6/lado · mochila"],["A2","H_ROW","3","10/lado"],["A3","H_GSQ","2","10 · 4-1-1"],["B2","H_CURL","2","4/lado"],["B3","H_COP","2","6/lado (longa dinâmica)"],["C1","H_SLRDL","3","6/lado · mochila"],["C2","H_CALF","3+3","12 + 12/lado"],["C3","H_PLT","2","10/lado"]]},{"n":37,"date":"16/06/2027","m":8,"tipo":"Transição","srpe":"5–6","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_SLHS","2","3/lado"],["P2","H_SKS","2","3/lado"],["P3","H_DEC","4","1"],["A1","H_BSS","3","6/lado · +1 série lado fraco"],["A2","H_ROW","3","10/lado"],["A3","H_PU","3","8"],["B2","H_CURL","2","4/lado"],["B3","H_COP","2","6/lado · +1 série lado fraco"],["C1","H_SLRDL","3","6/lado · +1 série lado fraco"],["C2","H_CALF","3+2","10 + 12/lado"],["C3","H_LATL","2","6/lado"]]},{"n":38,"date":"23/06/2027","m":8,"tipo":"Avaliação T4","srpe":"5","note":"Quem não foi à box faz os testes na sessão de 30/06.","rows":[["0","H_ROT","1","Nível 3"],["P1","H_CMJ","3","3"],["A1","H_BSS","2","6/lado · mochila"],["A2","H_ROW","3","10/lado"],["B2","H_CURL","2","4/lado"],["B3","H_COP","2","6/lado (longa dinâmica)"],["C1","H_SLRDL","2","6/lado"],["C2","H_CALF","2+2","10 + 12/lado"],["C3","H_PU","3","8"]]},{"n":39,"date":"30/06/2027","m":8,"tipo":"Transição","srpe":"4","note":"","rows":[["0","H_ROT","1","Nível 3"],["P1","H_CMJ","2","3"],["A1","H_BSS","2","6/lado · mochila"],["A2","H_ROW","2","10/lado"],["B2","H_CURL","2","3/lado"],["B3","H_COP","2","6/lado (longa dinâmica)"],["C1","H_SLRDL","2","6/lado"],["C2","H_CALF","2+2","10 + 12/lado"],["C3","H_PLT","2","10/lado"]]}];
+
+const MESO = {
+  1:{t:'Fundação', d:'Aprender os movimentos certos com pouca carga. Qualidade acima de tudo.'},
+  2:{t:'Força geral', d:'Ficar mais forte: a mochila começa a pesar mais e as séries ficam mais exigentes.'},
+  3:{t:'Força e travagem', d:'Mais força e aprender a travar bem, para proteger joelhos e tornozelos.'},
+  4:{t:'Força máxima', d:'O bloco mais forte da época: poucas repetições, bem feitas, com a mochila no máximo que controlas.'},
+  5:{t:'Força → explosão', d:'Transformar força em explosão: um exercício de força seguido, 60 s depois, de saltos máximos.'},
+  6:{t:'Saltos rápidos e multidireção', d:'Saltos rápidos e reativos e força para os lados, como no jogo.'},
+  7:{t:'Manutenção', d:'Manter o que ganhaste com menos volume, para chegares fresco aos jogos.'},
+  8:{t:'Fecho da época', d:'Corrigir o lado mais fraco, repetir os testes e preparar o verão.'},
+};
+const TIPO = t => /Descarga|Dose mínima/.test(t) ? {l: /Dose/.test(t)?'Semana mínima':'Semana leve', c:'gold'}
+  : /Avaliação/.test(t) ? {l:'Semana de testes', c:'warn'}
+  : /Pico/.test(t) ? {l:'Semana mais exigente', c:''}
+  : /Reentrada/.test(t) ? {l:'Regresso das férias', c:'gold'}
+  : /Transição/.test(t) ? {l:'Fim de época', c:'gold'} : {l:'Semana normal', c:''};
+
+const PARTS = [
+  {k:'0', t:'Aquecimento', r:'sem pausas'},
+  {k:'P', t:'Saltos e rapidez', r:'pausa ~60 s'},
+  {k:'F', t:'Força', r:'pausa 60–90 s'},
+  {k:'Q', t:'Proteção anti-lesão', r:'pausa ~60 s'},
+  {k:'C', t:'Pés, core e extra', r:'pausa ~45 s'},
+];
+const partOf = code => code==='0' ? '0' : code[0]==='P' ? 'P' : (code==='B2'||code==='B3') ? 'Q' : code[0]==='C' ? 'C' : 'F';
+
+const EX = {
+ H_SNAP:{n:'Snap-down → fixar',why:'Aprender a aterrar e travar com segurança.',s:['Em pé, braços esticados acima da cabeça.','Puxa os braços para baixo com força e cai rápido para meio-agachamento.','Pés à largura da anca, peso no pé todo, joelhos apontados para os pés.','Fica parado 2 s. Levanta-te e repete.'],no:'Joelhos a fugir para dentro ou calcanhares no ar.',easy:'Faz o movimento devagar, sem a queda rápida.'},
+ H_SNAP1:{n:'Snap-down numa perna → fixar',why:'Aterrar numa perna sem o joelho fugir para dentro.',s:['Igual ao snap-down, mas cais apoiado só numa perna.','Anca para trás, peito ligeiramente à frente.','Joelho alinhado com o 2.º dedo do pé.','Fica 2 s parado sem tocar com o outro pé.'],no:'Anca a cair para o lado da perna livre.',easy:'Faz o snap-down a 2 pés.'},
+ H_SQJ:{n:'Squat jump → fixar',why:'Explosão vertical a partir de parado.',s:['Desce a meio-agachamento e fica 2 s parado.','Salta o mais alto que conseguires, braços para cima.','Aterra suave no mesmo sítio, joelhos fletidos, e fica 2 s parado.'],no:'Aterrar com as pernas esticadas (barulho alto).',easy:'Salto mais baixo, foco na aterragem.'},
+ H_CMJ:{n:'Salto vertical (CMJ) → fixar',why:'Salto vertical máximo com boa aterragem.',s:['Em pé, desce rápido a meio-agachamento e salta logo, sem pausa.','Usa os braços com força.','Aterra no mesmo sítio, suave, e fica 2 s parado.'],no:'Aterragem barulhenta ou joelhos para dentro.',easy:'Salta mais baixo.'},
+ H_CMJ2:{n:'Salto vertical ×2 seguido',why:'Voltar a saltar logo depois de aterrar, como no jogo.',s:['Faz um salto vertical.','Ao aterrar, salta logo outra vez, com contacto muito curto.','No 2.º salto aterra e fica 2 s parado.','“2×2” = 2 saltos seguidos, 2 vezes em cada série.'],no:'Afundar muito entre os saltos.',easy:'Saltos isolados com aterragem fixa.'},
+ H_BJ:{n:'Salto em comprimento → fixar',why:'Explosão para a frente e travagem.',s:['Pés à largura da anca; desce e balança os braços atrás.','Salta para a frente o mais longe que conseguires controlar.','Aterra com os 2 pés, joelhos fletidos, e fica 2 s parado sem dar passo.'],no:'Cair para a frente ou dar um passo.',easy:'Salto mais curto.'},
+ H_BJ2:{n:'Salto em comprimento ×2 seguido',why:'Saltos para a frente ligados.',s:['Salta para a frente e, ao aterrar, salta logo outra vez.','No último salto, aterra e fica 2 s parado.','Precisas de 4 m livres.'],no:'Pausa entre saltos ou joelhos para dentro.',easy:'Um salto com aterragem fixa.'},
+ H_LHOP:{n:'Salto lateral a 2 pés → fixar',why:'Controlo para os lados.',s:['Pés juntos.','Salta para o lado cerca de 50 cm.','Aterra a 2 pés, tronco direito, e fica 2 s parado.','Volta para o outro lado.'],no:'O tronco cair para fora.',easy:'Saltos mais curtos.'},
+ H_SKS:{n:'Skater → fixar',why:'Potência para os lados e aterragem numa perna.',s:['Apoiado na perna esquerda, empurra o chão e salta para a direita.','Aterra só na perna direita, anca atrás, joelho alinhado.','Fica 2 s parado e salta de volta.'],no:'Joelho a fugir para dentro na aterragem.',easy:'Salto mais curto; podes tocar com o outro pé.'},
+ H_SKC:{n:'Skater contínuo',why:'Mudanças de direção rápidas.',s:['Igual ao skater, mas ao aterrar sais logo para o outro lado.','Anca baixa, contacto curto.','No último salto, fica 2 s parado.','“45°” = salta na diagonal, para a frente e para o lado.'],no:'Perder o equilíbrio ou joelho para dentro.',easy:'Skater com pausa em cada lado.'},
+ H_SLHS:{n:'Salto numa perna → fixar',why:'Força numa perna e aterragem segura.',s:['Numa perna, salta para a frente 30–80 cm.','Aterra na mesma perna e fica 2 s parado.'],no:'Anca a rodar ou joelho para dentro.',easy:'Snap-down numa perna.'},
+ H_SLH3:{n:'3 saltos seguidos numa perna',why:'Saltos rápidos numa perna.',s:['Numa perna, faz 3 saltos curtos para a frente seguidos.','Contactos curtos, tornozelo firme.','No 3.º salto, fica 2 s parado.'],no:'Perder o alinhamento no 2.º ou 3.º salto.',easy:'Um salto numa perna com pausa.'},
+ H_POGO:{n:'Pogos',why:'Tornozelos “mola”: rapidez e menos entorses.',s:['Saltinhos pequenos e rápidos só com os tornozelos.','Joelhos quase esticados; os calcanhares nunca tocam no chão.','Toque curto, como se o chão estivesse quente.'],no:'Dobrar muito os joelhos.',easy:'Mais devagar, com pausa entre saltos.'},
+ H_POGO1:{n:'Pogos numa perna',why:'Tornozelo “mola”, uma perna de cada vez.',s:['Igual ao pogo, mas numa perna.','Mão leve na parede, se precisares.','Ritmo constante.'],no:'Joelho a fugir para dentro.',easy:'Pogo a 2 pés.'},
+ H_STDL:{n:'Aterragem do degrau → fixar',why:'Absorver impacto com segurança.',s:['Em cima do 1.º degrau (máx. 20 cm).','Dá um passo para fora; não saltes.','Aterra a 2 pés, silencioso, joelhos fletidos, e fica 2 s parado.'],no:'Aterrar com as pernas esticadas.',easy:'Snap-down no chão.'},
+ H_STDJ:{n:'Drop jump do degrau',why:'Reatividade: tocar no chão e sair disparado.',s:['Do 1.º degrau, dá um passo para fora.','Assim que tocas no chão, salta o mais alto possível (o chão “queima”).','Aterra e fica 2 s parado.','Só fazes este se a aterragem do degrau já estiver fácil e controlada.'],no:'Ficar muito tempo no chão (vira um salto normal).',easy:'Aterragem do degrau, sem salto.'},
+ H_SPLJ:{n:'Salto em passada (split jump)',why:'Explosão na posição de passada.',s:['Posição de passada: um pé à frente, outro atrás.','Desce um pouco e salta na vertical.','Aterra na mesma posição, estável.','Faz as repetições de um lado e depois troca.'],no:'Joelho de trás a bater no chão.',easy:'Split squat a subir rápido, sem sair do chão.'},
+ H_WALL:{n:'Wall drill (parede)',why:'Postura de arranque: os primeiros passos do sprint.',s:['Mãos na parede, corpo inclinado ~45°, em linha reta da cabeça aos pés.','Posição A: um joelho à altura da anca, ponta do pé puxada para cima.','March = trocar de perna devagar. Single exchange = 1 troca rápida. Double = 2 trocas rápidas seguidas.','O pé que desce aterra por baixo da anca.'],no:'Dobrar a anca ou arquear as costas.',easy:'Menos inclinação.'},
+ H_DEC:{n:'Travagem curta',why:'Travar bem protege joelhos e coxas.',s:['Split stick: cai rápido para uma passada baixa e trava num só tempo.','3 passos + travar: 3 passos rápidos e para em 2 passos curtos, anca baixa.','Fica 2 s em posição atlética no fim.','Precisas de 4–5 m livres (corredor ou quintal).'],no:'Travar com o tronco para trás e um passo longo.',easy:'Faz tudo mais devagar.'},
+ H_GSQ:{n:'Agachamento com garrafão',why:'Aprender o agachamento.',s:['Garrafão ao peito, pés à largura dos ombros.','Desce em 4 s, pausa 1 s em baixo, sobe em 1 s.','Joelhos na direção dos pés, calcanhares no chão.'],no:'Calcanhares a levantar ou costas a arredondar.',easy:'Agacha até tocar numa cadeira.'},
+ H_RDL:{n:'Peso morto romeno com mochila',why:'Parte de trás das pernas e glúteos.',s:['Mochila nas mãos, à frente das coxas.','Joelhos ligeiramente fletidos; leva a anca para trás.','A mochila desce junto às pernas até meio da canela (3 s).','Costas sempre direitas; sobe empurrando a anca para a frente.'],no:'Arredondar as costas ou dobrar muito os joelhos.',easy:'Sem mochila ou descer menos.'},
+ H_BSS:{n:'Bulgarian (pé de trás na cadeira)',why:'O exercício de força principal em casa.',s:['Cadeira encostada à parede. Pé de trás apoiado no assento.','Pé da frente a um passo grande da cadeira; mochila às costas.','Desce em 3 s até o joelho de trás quase tocar no chão; sobe com a perna da frente.','Faz todas as repetições de um lado e troca.'],no:'Empurrar com a perna de trás ou joelho da frente a fugir para dentro.',easy:'Sem mochila, ou sem cadeira (split squat).'},
+ H_SS:{n:'Split squat (passada parada)',why:'Força numa perna, versão base.',s:['Um pé à frente, outro atrás (passada grande), pés à largura da anca.','Desce a direito em 3 s até o joelho de trás quase tocar.','Pausa 1 s e sobe.'],no:'Pés em linha (perdes o equilíbrio).',easy:'Desce menos ou apoia uma mão na parede.'},
+ H_SLSQ:{n:'Agachamento numa perna para cadeira',why:'Força e controlo do joelho numa perna.',s:['De pé numa perna, de costas para uma cadeira.','Senta-te devagar (3–4 s) só com essa perna.','Toca no assento e levanta-te sem balanço.','Joelho sempre alinhado com o pé.'],no:'Deixar-te cair na cadeira.',easy:'Cadeira mais alta (almofada no assento).'},
+ H_LATL:{n:'Afundo lateral com garrafão',why:'Força para os lados e adutores.',s:['Garrafão ao peito, pés bem afastados.','Senta para trás sobre uma perna; a outra fica esticada.','Pé de apoio todo no chão. Volta ao centro.'],no:'Calcanhar a levantar ou joelho para dentro.',easy:'Sem garrafão e descer menos.'},
+ H_SLRDL:{n:'Peso morto numa perna com mochila',why:'Isquiotibiais, glúteos e equilíbrio.',s:['Numa perna, mochila ou garrafão na mão do lado contrário.','Leva a anca para trás; a perna livre vai para trás, em linha com o tronco.','Ancas niveladas, sem rodar. Desce em 3 s e sobe.'],no:'Rodar a anca ou dobrar as costas.',easy:'Ponta do pé de trás no chão, ou mão na parede.'},
+ H_CURL:{n:'Leg curl com toalha',why:'Proteger os isquiotibiais (substitui o Nordic da box).',s:['Deitado de costas, calcanhares em cima de uma toalha num chão liso.','Sobe a anca (ponte).','Desliza os calcanhares para longe em 4 s, sem deixar a anca cair. Volta a puxar.','“bilateral” = 2 pernas. “sobe 2 / desce 1” = puxas com as 2 e deslizas só com 1. “/lado” = só com 1 perna.','Se alguém em casa te segurar os tornozelos, podes fazer o Nordic como na box.'],no:'Deixar a anca cair durante o deslize.',easy:'Deslizar menos distância.'},
+ H_COP:{n:'Copenhagen na cadeira',why:'Proteger a virilha (adutores).',s:['Cadeira encostada à parede. Deitado de lado, apoiado no cotovelo.','CURTA: o joelho de cima apoiado no assento. LONGA: o pé de cima no assento.','Sobe a anca até o corpo ficar em linha reta.','Com tempo (ex.: 15 s) = segurar em cima. Com repetições = subir e descer devagar.'],no:'Anca a cair ou tronco a rodar.',easy:'Versão curta (joelho) ou menos tempo.'},
+ H_CALF:{n:'Gémeo + sóleo no degrau',why:'Gémeos e sóleo fortes protegem o tendão de Aquiles e ajudam a correr.',s:['Gémeo: ponta do pé no degrau, perna esticada, mochila às costas. Sobe, 2 s em cima, desce em 3 s até abaixo do degrau.','Sóleo: igual, mas com o joelho dobrado (~45°).','Mão no corrimão ou na parede.','“2+2” = 2 séries de gémeo + 2 séries de sóleo.'],no:'Meio movimento ou pé a rodar para fora.',easy:'A 2 pés ou sem mochila.'},
+ H_ROW:{n:'Remada com mochila',why:'Força das costas (puxar).',s:['Uma mão e um joelho na cadeira, costas paralelas ao chão.','A outra mão segura a mochila.','Puxa a mochila até à anca, segura 2 s e desce devagar.'],no:'Rodar o tronco para puxar.',easy:'Menos peso na mochila.'},
+ H_PU:{n:'Flexões',why:'Força de empurrar e core.',s:['Mãos à largura dos ombros, corpo em prancha.','Desce até o peito quase tocar no chão, cotovelos a ~45°.','Sobe sem deixar a lombar cair.','“pés na cadeira” = versão mais difícil. “pausa 2 s” = parar 2 s em baixo.'],no:'Anca a afundar.',easy:'Mãos na cadeira encostada à parede.'},
+ H_PUE:{n:'Flexões explosivas',why:'Explosão dos braços.',s:['Desce controlado, como numa flexão.','Sobe o mais rápido que conseguires; as mãos podem sair do chão.','Corpo sempre em bloco.'],no:'Perder a prancha para ir mais rápido.',easy:'Flexão normal, rápida a subir.'},
+ H_SUIT:{n:'Marcha com mochila numa mão',why:'Core lateral e estabilidade da anca.',s:['Mochila numa só mão, ao lado do corpo.','Marcha no lugar devagar, joelhos altos.','Ombros nivelados, sem inclinar para o lado da mochila.','Troca de mão.'],no:'Inclinar o tronco.',easy:'Menos peso.'},
+ H_PLT:{n:'Prancha com toque no ombro',why:'Core: não deixar o corpo rodar.',s:['Posição de flexão (braços esticados), pés afastados.','Toca com uma mão no ombro oposto sem rodar a anca.','Alterna as mãos devagar.'],no:'Anca a balançar.',easy:'Pés mais afastados ou joelhos no chão.'},
+};
+
+const ROTINA = [
+  {n:'Tornozelo — knee-to-wall', l:['8/lado','8/lado + 2 s no fim','8/lado, rodando o joelho'], s:'Pé a um palmo da parede. Leva o joelho à parede sem levantar o calcanhar. Joelho sobre o 2.º dedo do pé.'},
+  {n:'Anca — world’s greatest stretch', l:['3/lado','4/lado','4/lado + braço acima'], s:'Passada grande à frente. Cotovelo de dentro ao pé, depois roda o tronco e aponta essa mão ao teto, olhando para ela.'},
+  {n:'Adutores — afundo lateral', l:['5/lado','6/lado, mais fundo','6/lado + pausa 2 s'], s:'Pés bem afastados. Senta para trás sobre uma perna, a outra esticada. Pé todo no chão.'},
+  {n:'Glúteo — ponte', l:['2 pernas × 10 (2 s em cima)','1 perna × 8/lado','1 perna + marcha × 8/lado'], s:'Deitado, pés no chão. Sobe a anca empurrando pelos calcanhares. Anca nivelada, costelas em baixo.'},
+  {n:'Pés — pogos', l:['2 × 10 no lugar','2 × 10 frente/trás','10 normais + 10 para os lados'], s:'Saltinhos rápidos só com os tornozelos. Joelhos quase esticados, calcanhares sem tocar no chão.'},
+];
+const rotLevel = w => w.m<=2 ? 1 : w.m<=4 ? 2 : 3;
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+function parseDate(s){ const [d,m,y] = s.split('/').map(Number); return new Date(y, m-1, d); }
+function defaultWeek(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  for (const w of WEEKS){ const d = parseDate(w.date); const end = new Date(d); end.setDate(end.getDate()+6); if (today <= end) return w.n; }
+  return WEEKS[WEEKS.length-1].n;
+}
+function howHTML(id){
+  const e = EX[id]; if (!e) return '';
+  return `<div class="how-body"><p class="why">${esc(e.why)}</p><ol>${e.s.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>
+    <p><span class="tag no">Evita</span>${esc(e.no)}</p><p><span class="tag easy">Mais fácil</span>${esc(e.easy)}</p></div>`;
+}
+function doseHTML(sets, reps){
+  const s = String(sets), r = String(reps);
+  const main = r.split(' · ')[0].split(' (')[0].split(' → ')[0];
+  const extra = r.slice(main.length).replace(/^ · | ·$/g,'').replace(/^\s*/, '');
+  return `${esc(s)} × ${esc(main)}${extra ? `<small>${esc(extra.replace(/^· /,''))}</small>` : ''}`;
+}
+
+/* ---------- week view ---------- */
+let cur = store.get('asvWeek', null);
+if (!WEEKS.some(w => w.n === cur)) cur = defaultWeek();
+let eff = null, pain = null;
+
+const sel = $('#weekSel');
+sel.innerHTML = WEEKS.map(w => `<option value="${w.n}">Semana ${w.n} · ${w.date}${TIPO(w.tipo).l!=='Semana normal' ? ' · ' + TIPO(w.tipo).l : ''}</option>`).join('');
+
+function render(){
+  const w = WEEKS.find(x => x.n === cur);
+  sel.value = String(cur);
+  $('#prev').disabled = cur === 1; $('#next').disabled = cur === WEEKS.length;
+  const tp = TIPO(w.tipo), meso = MESO[w.m];
+  const mins = Math.round((w.rows.length * 3.4 + 4) / 5) * 5;
+  $('#weekHead').innerHTML = `<div class="date">Quarta-feira · ${esc(w.date)}</div><h2>Semana ${w.n}</h2>
+    <div class="chips"><span class="chip">${esc(meso.t)}</span><span class="chip ${tp.c}">${esc(tp.l)}</span><span class="chip">≈ ${mins} min</span><span class="chip">Esforço esperado ${esc(w.srpe)}/10</span></div>
+    <p class="goal">${esc(meso.d)}</p>${w.note ? `<div class="note">${esc(w.note)}</div>` : ''}`;
+  const doneKey = 'asvDone' + w.n; const done = store.get(doneKey, []);
+  let html = '', curPart = null, idx = 0;
+  w.rows.forEach(([code, id, sets, reps]) => {
+    const p = partOf(code);
+    if (p !== curPart){ if (curPart !== null) html += '</div>'; const P = PARTS.find(x=>x.k===p);
+      html += `<div class="part"><div class="part-h"><h3>${esc(P.t)}</h3><span>${esc(P.r)}</span></div>`; curPart = p; }
+    const isRot = id === 'H_ROT'; const lvl = rotLevel(w);
+    const name = isRot ? `Rotina ASV — nível ${lvl}` : EX[id].n;
+    const dose = isRot ? `~7 min<small>5 exercícios · ver separador Rotina ASV</small>` : doseHTML(sets, reps);
+    const how = isRot ? `<div class="how-body"><ol>${ROTINA.map(r=>`<li><strong>${esc(r.n)}</strong>: ${esc(r.l[lvl-1])}</li>`).join('')}</ol></div>` : howHTML(id);
+    html += `<div class="ex ${done.includes(idx)?'done':''}" data-i="${idx}"><div class="ex-row">
+      <button class="check" aria-label="Marcar ${esc(name)} como feito" aria-pressed="${done.includes(idx)}">${done.includes(idx)?'✓':''}</button>
+      <div class="ex-name">${esc(name)}</div><div class="dose">${dose}</div></div>
+      <details class="how"><summary>Como fazer</summary>${how}</details></div>`;
+    idx++;
+  });
+  html += '</div>';
+  $('#session').innerHTML = html;
+  $('#session').querySelectorAll('.check').forEach(b => b.addEventListener('click', () => {
+    const ex = b.closest('.ex'); const i = +ex.dataset.i; const d = store.get(doneKey, []);
+    const k = d.indexOf(i); if (k >= 0) d.splice(k,1); else d.push(i); store.set(doneKey, d);
+    ex.classList.toggle('done', k < 0); b.textContent = k < 0 ? '✓' : ''; b.setAttribute('aria-pressed', String(k < 0)); progress(w, d.length);
+  }));
+  progress(w, done.length);
+  eff = null; pain = null; buildScales(); updateMsg();
+  store.set('asvWeek', cur);
+}
+function progress(w, n){
+  const t = w.rows.length; $('#progTxt').textContent = `${n} de ${t} feitos`; $('#progBar').style.width = (100*n/t) + '%';
+}
+function buildScales(){
+  [['#effScale','eff'],['#painScale','pain']].forEach(([sel,key]) => {
+    const el = $(sel); el.innerHTML = Array.from({length:11},(_,i)=>`<button type="button" aria-pressed="false" data-v="${i}">${i}</button>`).join('');
+    el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      el.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed','false')); b.setAttribute('aria-pressed','true');
+      if (key==='eff') eff = +b.dataset.v; else pain = +b.dataset.v; updateMsg();
+    }));
+  });
+}
+function updateMsg(){
+  const w = WEEKS.find(x => x.n === cur); const where = $('#painWhere').value.trim();
+  $('#painAlert').hidden = !(pain !== null && pain > 3);
+  const done = store.get('asvDone' + w.n, []).length;
+  $('#msg').textContent = `Treino em casa · Semana ${w.n} (${w.date})\nFeito: ${done}/${w.rows.length} exercícios\nEsforço: ${eff ?? '_'}/10\nDor: ${pain ?? '_'}/10${where ? '\nNotas: ' + where : ''}`;
+}
+$('#painWhere').addEventListener('input', updateMsg);
+$('#copyBtn').addEventListener('click', () => {
+  updateMsg(); const txt = $('#msg').textContent; const ok = $('#copyOk');
+  const fallback = () => { const r = document.createRange(); r.selectNodeContents($('#msg')); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    ok.textContent = 'Texto selecionado: copia-o e cola no WhatsApp do treinador.'; ok.hidden = false; };
+  try { navigator.clipboard.writeText(txt).then(() => { ok.textContent = 'Copiado. Cola no WhatsApp do treinador.'; ok.hidden = false; }, fallback); } catch(e){ fallback(); }
+});
+$('#prev').addEventListener('click', () => { if (cur > 1){ cur--; render(); scrollTo({top:0}); } });
+$('#next').addEventListener('click', () => { if (cur < WEEKS.length){ cur++; render(); scrollTo({top:0}); } });
+sel.addEventListener('change', () => { cur = +sel.value; render(); });
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', String(x === t)));
+  document.querySelectorAll('.view').forEach(v => v.hidden = v.id !== 'view-' + t.dataset.view);
+  scrollTo({top:0});
+}));
+
+/* ---------- rotina + exercise library ---------- */
+$('#rotinaList').innerHTML = `<div class="tbl"><table><thead><tr><th>Exercício</th><th>Nível 1<br><span style="font-weight:500;text-transform:none">out–nov</span></th><th>Nível 2<br><span style="font-weight:500;text-transform:none">dez–fev</span></th><th>Nível 3<br><span style="font-weight:500;text-transform:none">mar–jun</span></th></tr></thead><tbody>${
+  ROTINA.map(r => `<tr><td><strong>${esc(r.n)}</strong><br><span class="hint">${esc(r.s)}</span></td>${r.l.map(x=>`<td>${esc(x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+function renderAll(q=''){
+  q = q.toLowerCase();
+  $('#allEx').innerHTML = Object.entries(EX).filter(([k,e]) => !q || e.n.toLowerCase().includes(q) || e.why.toLowerCase().includes(q))
+    .sort((a,b)=>a[1].n.localeCompare(b[1].n,'pt'))
+    .map(([k,e]) => `<div class="ex"><div class="ex-row" style="grid-template-columns:1fr"><div class="ex-name">${esc(e.n)}</div></div><details class="how"><summary>Como fazer</summary>${howHTML(k)}</details></div>`).join('')
+    || '<p class="hint">Nenhum exercício encontrado.</p>';
+}
+$('#search').addEventListener('input', e => renderAll(e.target.value));
+renderAll();
+render();
+</script>
+
+</body></html>
